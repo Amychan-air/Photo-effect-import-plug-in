@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>相片连续效果导入插件</title>
+    <link id="ppstyle" rel="stylesheet" type="text/css" href="css/style.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 10px;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            gap: 15px;
+            height: calc(100vh - 60px);
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #fff;
+            border-radius: 6px;
+            padding: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        .content {
+            flex: 1;
+            background-color: #fff;
+            border-radius: 6px;
+            padding: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        h1 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #0078d4;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+        button:hover {
+            background-color: #005a9e;
+        }
+        #effect-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+        #effect-list li {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #effect-list li:hover {
+            background-color: #f0f0f0;
+        }
+        #preview-container {
+            width: 100%;
+            flex: 1;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        #preview-image {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .effect-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .frame-rate-control {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .frame-rate-control label {
+            margin-right: 10px;
+            font-size: 13px;
+        }
+        .frame-rate-control select {
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        #status {
+            margin-top: 10px;
+            color: #666;
+            font-size: 12px;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        .active {
+            background-color: #e0f0ff !important;
+            font-weight: bold;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            color: white;
+        }
+    </style>
+    <script src="./lib/CSInterface.js"></script>
+    <script src="./ext.js"></script>
+</head>
+<body onload="onLoaded()">
+    <h1>相片连续效果导入插件</h1>
+    
+    <div class="container">
+        <div class="sidebar">
+            <h2>效果列表</h2>
+            <button id="refresh-btn">刷新效果列表</button>
+            <ul id="effect-list"></ul>
+        </div>
+        
+        <div class="content">
+            <h2 id="effect-title">预览</h2>
+            <div id="preview-container">
+                <img id="preview-image" src="" alt="预览图像">
+                <div id="loading-indicator" class="loading" style="display: none;">加载中...</div>
+            </div>
+            
+            <div class="effect-controls">
+                <button id="play-btn">播放</button>
+                <button id="pause-btn">暂停</button>
+                <button id="import-btn">插入到项目</button>
+            </div>
+            
+            <div class="frame-rate-control">
+                <label for="frame-rate">帧率设置: </label>
+                <select id="frame-rate">
+                    <option value="24">24 fps</option>
+                    <option value="25">25 fps</option>
+                    <option value="30" selected>30 fps</option>
+                    <option value="60">60 fps</option>
+                </select>
+            </div>
+            
+            <div id="status" class="default">
+                准备就绪，请选择一个效果文件夹。
+            </div>
+            
+            <div id="version_string" class="default" style="margin-top: 5px; text-align: right; font-size: 10px; color: #999;"></div>
+        </div>
+    </div>
+</body>
+</html>

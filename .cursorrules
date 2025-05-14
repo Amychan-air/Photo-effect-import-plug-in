@@ -1,0 +1,56 @@
+這是一個premier Pro插件
+
+# 插件配置
+name: "相片連續效果導入插件"
+version: "1.0.0"
+hostApplication: "premiere"
+manifestVersion: "4.0"
+
+# 權限設置
+allowFileSystem: true
+allowNetworkAccess: false
+
+# 插件類型
+type: "panel"
+
+# 面板設置
+panel:
+  menuName: "相片連續效果導入"
+  width: 400
+  height: 600
+  
+# 支持的媒體類型
+supportedMediaTypes:
+  - "image/jpeg"
+  - "image/png"
+  - "image/tiff"
+  - "image/bmp"
+
+# API訪問級別
+apiAccess:
+  - "project"
+  - "sequence"
+  - "application"
+  - "media"
+
+# 文件系統訪問權限
+fileSystemAccess:
+  - "read"
+  - "readFolder"
+  - "writeTemp"
+
+# 調試設置
+debug: true
+
+# 文件夾掃描設置
+folderScanSettings:
+  allowedExtensions: [".jpg", ".jpeg", ".png", ".tiff", ".tif", ".bmp"]
+  maxImagesPerFolder: 1000
+  sortBy: "filename" # 'filename', 'date', 'modified'
+
+# 序列導入設置
+sequenceImportSettings:
+  defaultFrameRate: 30
+  frameRateOptions: [24, 25, 30, 60]
+  createProxy: false
+  insertAtPlayhead: true

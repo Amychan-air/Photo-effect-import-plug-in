@@ -41,8 +41,8 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 					<Menu>PProPanel (SDK sample panel)</Menu>
 					<Geometry>
 						<Size>
-							<Height>300</Height>
-							<Width>180</Width>
+							<Height>500</Height>
+							<Width>500</Width>
 						</Size>
 					</Geometry>
 				</UI>
