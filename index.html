@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Premiere Pro图像序列导入</title>
+	
+	<!-- 先加载jQuery，再加载其他依赖它的脚本 -->
+	<script src="./lib/jquery-1.9.1.js"></script>
+	<script src="./lib/CSInterface.js"></script>
+	<script src="./ext.js"></script>
+	
+	<link rel="stylesheet" href="css/style.css">
+</head>
+<body onLoad="onLoaded()">
+	<div id="content">
+		<h1>图像序列导入工具</h1>
+		
+		<div class="section">
+			<h2>选择图像序列文件夹</h2>
+			<button id="importImageSequence">选择文件夹</button>
+			<div id="imageSequencePath" class="pathDisplay">[未选择文件夹]</div>
+		</div>
+		
+		<div class="section">
+			<h2>导入选项</h2>
+			<div class="option-group">
+				<label for="frameRate">帧率设置:</label>
+				<select id="frameRate">
+					<option value="24">24 fps</option>
+					<option value="25">25 fps</option>
+					<option value="29.97">29.97 fps</option>
+					<option value="30">30 fps</option>
+					<option value="60">60 fps</option>
+				</select>
+			</div>
+			
+			<div class="option-group">
+				<label for="sortOrder">排序方式:</label>
+				<select id="sortOrder">
+					<option value="numeric">数字排序</option>
+					<option value="alphabetical">字母排序</option>
+				</select>
+			</div>
+			
+			<div class="option-group">
+				<label for="startFrame">起始帧序号:</label>
+				<input type="number" id="startFrame" value="0" min="0">
+			</div>
+			
+			<div class="option-group">
+				<label for="endFrame">结束帧序号:</label>
+				<input type="number" id="endFrame" value="0" min="0">
+				<small>(0表示导入全部)</small>
+			</div>
+			
+			<div class="option-group">
+				<label for="addToSequence">
+					<input type="checkbox" id="addToSequence" checked>
+					添加到当前序列
+				</label>
+			</div>
+		</div>
+		
+		<div class="section">
+			<h2>导入</h2>
+			<button id="previewImageSequence" class="primary-button">导入图像序列</button>
+			<div id="importStatus" class="status-display"></div>
+		</div>
+		
+		<div class="footer">
+			<p id="version_string">Premiere Pro 扩展</p>
+		</div>
+	</div>
+	
+	<!-- 添加一个调试信息区域 -->
+	<div id="debug-panel" style="display:block; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;">
+		<h3>调试信息</h3>
+		<div id="debug-info"></div>
+		<button id="toggle-debug">显示/隐藏调试信息</button>
+		<button id="check-paths">检查路径</button>
+		<button id="check-jquery">检查jQuery</button>
+	</div>
+
+	<script>
+		// 调试辅助函数
+		document.addEventListener('DOMContentLoaded', function() {
+			var debugPanel = document.getElementById('debug-panel');
+			var debugInfo = document.getElementById('debug-info');
+			var toggleDebug = document.getElementById('toggle-debug');
+			var checkPaths = document.getElementById('check-paths');
+			var checkJQuery = document.getElementById('check-jquery');
+			
+			// 显示/隐藏调试面板
+			toggleDebug.addEventListener('click', function() {
+				if (debugPanel.style.display === 'none') {
+					debugPanel.style.display = 'block';
+				} else {
+					debugPanel.style.display = 'none';
+				}
+			});
+			
+			// 检查jQuery
+			if (checkJQuery) {
+				checkJQuery.addEventListener('click', function() {
+					var jqueryInfo = "";
+					if (typeof jQuery !== 'undefined') {
+						jqueryInfo = "<div class='success'><strong>jQuery已加载:</strong> 版本 " + jQuery.fn.jquery + "</div>";
+						if (typeof $ !== 'undefined') {
+							jqueryInfo += "<div class='success'><strong>$符号已定义</strong></div>";
+						} else {
+							jqueryInfo += "<div class='error'><strong>$符号未定义</strong> (jQuery已加载但$不可用)</div>";
+						}
+					} else {
+						jqueryInfo = "<div class='error'><strong>jQuery未加载</strong></div>";
+					}
+					debugInfo.innerHTML = jqueryInfo;
+				});
+			}
+			
+			// 检查路径
+			checkPaths.addEventListener('click', function() {
+				try {
+					var csInterface = new CSInterface();
+					
+					// 显示扩展路径
+					var extensionPath = csInterface.getSystemPath(SystemPath.EXTENSION);
+					var userDataPath = csInterface.getSystemPath(SystemPath.USER_DATA);
+					var commonFilesPath = csInterface.getSystemPath(SystemPath.COMMON_FILES);
+					
+					// 显示环境信息
+					var hostEnv = csInterface.getHostEnvironment();
+					var appInfo = hostEnv.appName + " " + hostEnv.appVersion;
+					
+					var info = "<strong>扩展路径:</strong> " + extensionPath + "<br>" +
+							"<strong>用户数据:</strong> " + userDataPath + "<br>" +
+							"<strong>通用文件:</strong> " + commonFilesPath + "<br>" +
+							"<strong>应用信息:</strong> " + appInfo + "<br>";
+					
+					// 检查JSX加载
+					csInterface.evalScript('typeof $._PPP_ !== "undefined"', function(result) {
+						info += "<strong>JSX加载状态:</strong> " + (result === "true" ? "已加载" : "未加载") + "<br>";
+						debugInfo.innerHTML = info;
+					});
+				} catch(e) {
+					debugInfo.innerHTML = "<div class='error'><strong>错误:</strong> " + e.message + "</div>";
+				}
+			});
+			
+			// 展示错误捕获
+			window.addEventListener('error', function(event) {
+				var errorInfo = "<div class='error'><strong>错误:</strong> " + event.message + 
+								"<br><strong>文件:</strong> " + event.filename + 
+								"<br><strong>行号:</strong> " + event.lineno + "</div>";
+				debugInfo.innerHTML += errorInfo;
+				debugPanel.style.display = 'block';
+			});
+			
+			// 页面加载时自动检测jQuery
+			var jqueryStatus = "";
+			if (typeof jQuery !== 'undefined') {
+				jqueryStatus = "<div class='success'><strong>页面加载完成: jQuery已加载</strong> (版本 " + jQuery.fn.jquery + ")</div>";
+			} else {
+				jqueryStatus = "<div class='error'><strong>页面加载完成: jQuery未加载</strong></div>";
+			}
+			debugInfo.innerHTML = jqueryStatus;
+		});
+	</script>
+	
+	<!-- 添加jQuery全局检查脚本 -->
+	<script>
+		// 检查jQuery是否加载成功，如果未加载则手动设置$作为备用
+		if (typeof jQuery !== 'undefined' && typeof $ === 'undefined') {
+			window.$ = jQuery;
+			console.log("已手动设置$符号");
+		}
+	</script>
+</body>
+</html>
